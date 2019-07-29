@@ -19,6 +19,7 @@ c  get alos position and times
       double precision avetime,refline
       double precision sumx,sumy,sumsqx,sumsqy,sumxy,ssxx,ssyy,ssxy
       integer*1 indata(32768)
+      integer*1 allbits
       integer statb(13),stat
       integer numdata,rowPos,colPos,eof
 c  read the leader file descriptor record
@@ -29,10 +30,12 @@ c  read the leader file descriptor record
       !!!!!!!!!!!!!!
       !!!!!!!!!!!!!!
 
+      !!1 byte with all 1's
+      allbits = -1
       !get the first 720 bytes
       numData = 720
       rowPos = 1
-
+        
       call getStreamAtPos(ledAccessor,descriptor,rowPos,numData)
 c  read the leader file summary record
       !!!!!jng ierr=ioread(ichan,summary,4096)
@@ -106,12 +109,12 @@ c  read in the raw data file line by line
       do i=1,nlines
          ! jng ierr=ioread(ichandata,indata,len)
          call getLineSequential(rawAccessor,indata,eof)
-	   iyear=iand(indata(40),255)*256*256*256+iand(indata(39),255)*256*256+
-     $     iand(indata(38),255)*256+iand(indata(37),255)
-         idoy=iand(indata(44),255)*256*256*256+iand(indata(43),255)*256*256+
-     $     iand(indata(42),255)*256+iand(indata(41),255)
-         ims=iand(indata(48),255)*256*256*256+iand(indata(47),255)*256*256+
-     $     iand(indata(46),255)*256+iand(indata(45),255)
+	   iyear=iand(indata(40),allbits)*256*256*256+iand(indata(39),allbits)*256*256+
+     $     iand(indata(38),allbits)*256+iand(indata(37),allbits)
+         idoy=iand(indata(44),allbits)*256*256*256+iand(indata(43),allbits)*256*256+
+     $     iand(indata(42),allbits)*256+iand(indata(41),allbits)
+         ims=iand(indata(48),allbits)*256*256*256+iand(indata(47),allbits)*256*256+
+     $     iand(indata(46),allbits)*256+iand(indata(45),allbits)
          ddate(2) = ims*1000.0 !we save days in the year and microsec in the day
          ddate(1) = 1.*idoy
          call setLineSequential(auxAccessor,ddate)  
